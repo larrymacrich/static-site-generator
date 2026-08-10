@@ -2,7 +2,7 @@ from enum import Enum
 
 
 class TextType(Enum):
-    PLAIN = "plain"
+    TEXT = "text"
     BOLD = "bold"
     ITALIC = "italic"
     CODE = "code"
@@ -17,6 +17,8 @@ class TextNode():
         self.url = url
 
     def __eq__(self, other) -> bool:
+        if not isinstance(other, TextNode):
+            return False    
         props = ["text", "text_type", "url"]
         for prop in props:
             if getattr(self, prop) != getattr(other, prop):
@@ -24,7 +26,7 @@ class TextNode():
         return True
 
     def __repr__(self) -> str:
-        attr_str = f"TextNode({self.text}, {self.text_type.value})"
-        if self.url is not None:
-            attr_str = attr_str.replace(")", f", {self.url})")
-        return attr_str
+        return (
+             f"TextNode(text={self.text!r}, text_type={self.text_type.value!r}, "
+             f"url={self.url!r})"
+        )
