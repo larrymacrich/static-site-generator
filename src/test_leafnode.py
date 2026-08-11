@@ -16,7 +16,7 @@ class TestLeafNodeToHtml(unittest.TestCase):
             "Click me!", 
             {"href": "https://www.google.com"}
         )
-        self.noValue = LeafNode(
+        self.no_value = LeafNode(
             "a",
             None
         )
@@ -39,11 +39,10 @@ class TestLeafNodeToHtml(unittest.TestCase):
             '<a href="https://www.google.com">Click me!</a>',
         )
 
-    def test_to_html_noValue(self):
-        self.assertRaises(
-            ValueError,
-            self.noValue.to_html
-        )
+    def test_to_html_no_value(self):
+        with self.assertRaises(ValueError) as cm:
+            self.no_value.to_html()
+        self.assertEqual(str(cm.exception), "All leaf nodes must have a value.")  
 
 class TestLeafNodeRepresentation(unittest.TestCase):
     """Tests for LeafNode.__repr__()."""
