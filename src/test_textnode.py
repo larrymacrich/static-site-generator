@@ -1,5 +1,5 @@
 import unittest
-from textnode import TextNode, TextType, text_node_to_html_node
+from textnode import TextNode, TextType, text_node_to_html_node, split_nodes_delimiter
 
 class TestTextNodeEquality(unittest.TestCase):
     """Tests covering equality (__eq__) logic across properties."""
@@ -111,6 +111,81 @@ class TestTextNodeToHTML(unittest.TestCase):
         node = TextNode("Bad type", "not_a_real_type")
         with self.assertRaises(TypeError):
             text_node_to_html_node(node)
+
+class TestTextNodeSplitNodesDelimiter(unittest.TestCase):
+    """Tests for TextNode.split_nodes_delimiter()"""
+
+    def test_empty_list(self):
+        node = []
+        self.assertEqual(
+            [node],
+            [[]]
+    )
+        
+    def test_code_type(self):
+        node = TextNode("This is text with a `code block word`", TextType.CODE)
+        self.assertEqual(
+            [node],
+            [TextNode("This is text with a `code block word`", TextType.CODE)]
+        )
+
+    def test_delimiter_open(self):
+        node = TextNode("This is text with a `code block word", TextType.TEXT)
+        with self.assertRaises(ValueError) as cm:
+            split_nodes_delimiter([node], "`", TextType.CODE)
+        self.assertEqual(
+            str(cm.exception), 
+            f"No closing of given delimter in:\n{node}"
+        )  
+
+    def test_delimiter_enclosed(self):
+        node = TextNode("This is text with a `code block` word", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
+        expected_nodes = [
+            TextNode("This is text with a ", TextType.TEXT),
+            TextNode("code block", TextType.CODE),
+            TextNode(" word", TextType.TEXT),
+        ]
+        self.assertEqual(new_nodes, expected_nodes)
+
+    def test_delimiter_at_beginning(self):
+        node = TextNode("`This is` text with a code block word", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
+        expected_nodes = [
+            TextNode("This is", TextType.CODE),
+            TextNode(" text with a code block word", TextType.TEXT),
+        ]
+        self.assertEqual(new_nodes, expected_nodes)
+
+    def test_delimiter_at_end(self):
+        node = TextNode("This is text with a code `block word`", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
+        expected_nodes = [
+            TextNode("This is text with a code ", TextType.TEXT),
+            TextNode("block word", TextType.CODE),
+        ]
+        self.assertEqual(new_nodes, expected_nodes)
+
+    def test_empty_delimiter_(self):
+        node = TextNode("This is text with a `` code block word", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
+        expected_nodes = [
+            TextNode("This is text with a ", TextType.TEXT),
+            TextNode(" code block word", TextType.TEXT),
+        ]
+        self.assertEqual(new_nodes, expected_nodes)
+
+    def test_multiple_delimiter_in_one_text(self):
+        node = TextNode("This has `code one` and `code two` in it", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
+        expected_nodes = [
+            TextNode("This has ", TextType.TEXT),
+            TextNode("code one", TextType.CODE),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("code two", TextType.CODE),
+            TextNode(" in it", TextType.TEXT),
+        ]
+        self.assertEqual(new_nodes, expected_nodes)
 
 if __name__ == "__main__":
     unittest.main()
