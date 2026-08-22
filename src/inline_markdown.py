@@ -31,31 +31,25 @@ def split_nodes_delimiter(
             new_nodes.append(TextNode(text = section, text_type = section_type))
     return new_nodes
 
+
 def split_nodes_image(old_nodes: list[TextNode]) -> list[TextNode]:
-    new_nodes: list[TextNode] = []
-    for old_node in old_nodes:
-        if old_node.text_type != TextType.TEXT:
-            new_nodes.append(old_node)
-            continue
+    return _split_nodes_by_pattern(
+        old_nodes, 
+        extract_markdown_images, 
+        lambda alt, url: f"![{alt}]({url})", 
+        TextType.IMAGE
+    )
 
-        remaining_text = old_node.text
-        images = extract_markdown_images(remaining_text)
-        if not images:
-            new_nodes.append(old_node)
-            continue
-
-        for image_alt, image_url in images:
-            text, remaining_text = remaining_text.split(f"![{image_alt}]({image_url})", 1)
-            if text:
-                new_nodes.append(TextNode(text, TextType.TEXT))
-            new_nodes.append(TextNode(image_alt, TextType.IMAGE, image_url))
-
-        if remaining_text:
-            new_nodes.append(TextNode(remaining_text, TextType.TEXT))
-
-    return new_nodes
 
 def split_nodes_link(old_nodes: list[TextNode]) -> list[TextNode]:
+    return _split_nodes_by_pattern(
+        old_nodes, 
+        extract_markdown_links, 
+        lambda alt, url: f"[{alt}]({url})", 
+        TextType.LINK
+    )
+
+def _split_nodes_by_pattern(old_nodes, extract_matches, build_delimiter, text_type):
     new_nodes: list[TextNode] = []
     for old_node in old_nodes:
         if old_node.text_type != TextType.TEXT:
@@ -63,16 +57,16 @@ def split_nodes_link(old_nodes: list[TextNode]) -> list[TextNode]:
             continue
 
         remaining_text = old_node.text
-        links = extract_markdown_links(remaining_text)
-        if not links:
+        matches = extract_matches(remaining_text)
+        if not matches:
             new_nodes.append(old_node)
             continue
 
-        for link_alt, link_url in links:
-            text, remaining_text = remaining_text.split(f"[{link_alt}]({link_url})", 1)
+        for alt, url in matches:
+            text, remaining_text = remaining_text.split(build_delimiter(alt, url), 1)
             if text:
                 new_nodes.append(TextNode(text, TextType.TEXT))
-            new_nodes.append(TextNode(link_alt, TextType.LINK, link_url))
+            new_nodes.append(TextNode(alt, text_type, url))
 
         if remaining_text:
             new_nodes.append(TextNode(remaining_text, TextType.TEXT))
