@@ -49,4 +49,4 @@ def text_node_to_html_node(text_node: TextNode) -> LeafNode:
             raise TypeError(
                 f"{text_node.text_type} type is not supported"
                 f"for {type(text_node).__name__}"
-            )    
+            )
