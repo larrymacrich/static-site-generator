@@ -1,6 +1,13 @@
 import unittest
 from textnode import TextNode, TextType
-from inline_markdown import split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_image, split_nodes_link
+from inline_markdown import (
+    extract_markdown_images, 
+    extract_markdown_links, 
+    split_nodes_delimiter, 
+    split_nodes_image, 
+    split_nodes_link,
+    text_to_textnodes
+)
 
 class test_extract_markdown_images(unittest.TestCase):
     """Tests for inline_markdown.extract_markdown_images()"""
@@ -372,3 +379,93 @@ class TestTextNodeSplitNodesLink(unittest.TestCase):
             new_nodes,
             [node],
         )
+
+class TestTextToTextnode(unittest.TestCase):
+    """Tests for inline_markdown.text_to_textnodes()"""
+
+    def test_text_to_textnode_all_typed(self):
+        text = (
+            "This is **text** with an _italic_ word and a `code block` " 
+            "and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) " 
+            "and a [link](https://boot.dev)"
+        )
+        new_nodes = text_to_textnodes(text)
+        self.assertEqual(
+            new_nodes,
+            [
+                TextNode("This is ", TextType.TEXT),
+                TextNode("text", TextType.BOLD),
+                TextNode(" with an ", TextType.TEXT),
+                TextNode("italic", TextType.ITALIC),
+                TextNode(" word and a ", TextType.TEXT),
+                TextNode("code block", TextType.CODE),
+                TextNode(" and an ", TextType.TEXT),
+                TextNode("obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"),
+                TextNode(" and a ", TextType.TEXT),
+                TextNode("link", TextType.LINK, "https://boot.dev"),
+            ],
+        )
+    def test_text_to_textnode_plain_text(self):
+        text = "Just a plain sentence with no markdown."
+        new_nodes = text_to_textnodes(text)
+        self.assertEqual(
+            new_nodes,
+            [TextNode("Just a plain sentence with no markdown.", TextType.TEXT)],
+    )
+
+    def test_text_to_textnode_only_bold(self):
+        text = "This has **only bold** text in it."
+        new_nodes = text_to_textnodes(text)
+        self.assertEqual(
+            new_nodes,
+            [
+                TextNode("This has ", TextType.TEXT),
+                TextNode("only bold", TextType.BOLD),
+                TextNode(" text in it.", TextType.TEXT),
+            ],
+        )
+
+    def test_text_to_textnode_multiple_same_type(self):
+        text = "**First** and **second** bold sections."
+        new_nodes = text_to_textnodes(text)
+        self.assertEqual(
+            new_nodes,
+            [
+                TextNode("First", TextType.BOLD),
+                TextNode(" and ", TextType.TEXT),
+                TextNode("second", TextType.BOLD),
+                TextNode(" bold sections.", TextType.TEXT),
+            ],
+        )
+
+    def test_text_to_textnode_multiple_images(self):
+        text = "![first](https://a.com/1.png) and ![second](https://a.com/2.png)"
+        new_nodes = text_to_textnodes(text)
+        self.assertEqual(
+            new_nodes,
+            [
+                TextNode("first", TextType.IMAGE, "https://a.com/1.png"),
+                TextNode(" and ", TextType.TEXT),
+                TextNode("second", TextType.IMAGE, "https://a.com/2.png"),
+            ],
+        )
+
+    def test_text_to_textnode_link_and_image_together(self):
+        text = "Check ![this image](https://a.com/img.png) and [this link](https://a.com)."
+        new_nodes = text_to_textnodes(text)
+        self.assertEqual(
+            new_nodes,
+            [
+                TextNode("Check ", TextType.TEXT),
+                TextNode("this image", TextType.IMAGE, "https://a.com/img.png"),
+                TextNode(" and ", TextType.TEXT),
+                TextNode("this link", TextType.LINK, "https://a.com"),
+                TextNode(".", TextType.TEXT),
+            ],
+        )
+
+    def test_text_to_textnode_unclosed_delimiter_raises(self):
+        text = "This has an **unclosed bold section."
+        with self.assertRaises(ValueError):
+            text_to_textnodes(text)
+    

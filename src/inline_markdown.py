@@ -1,18 +1,27 @@
 import re
+from typing import Callable
 from textnode import TextNode, TextType
 
-def extract_markdown_images(text: str) -> list[tuple[str, str]]:
-    pattern = r"!\[(.*?)\]\((.*?)\)"
-    return re.findall(pattern, text)
+def text_to_textnodes(text: str) -> list[TextNode]:
+    new_nodes = [TextNode(text, TextType.TEXT)]
+    delimiters = [
+        ('**',TextType.BOLD),
+        ('_', TextType.ITALIC),
+        ('`', TextType.CODE),
+    ]
+    for text_delimiter, text_type in delimiters:
+        new_nodes = split_nodes_delimiter(new_nodes, text_delimiter, text_type)
 
-def extract_markdown_links(text: str) -> list[tuple[str, str]]:
-    pattern = r"(?<!!)\[(.*?)\]\((.*?)\)"
-    return re.findall(pattern, text)
+    new_nodes = split_nodes_image(new_nodes)
+    new_nodes = split_nodes_link(new_nodes)
+    
+    return new_nodes
+
 
 def split_nodes_delimiter(
-        old_nodes: list[TextNode], 
-        delimiter: str, 
-        text_type: TextType
+    old_nodes: list[TextNode], 
+    delimiter: str, 
+    text_type: TextType
 ) -> list[TextNode]:
     new_nodes: list[TextNode] = []
     for old_node in old_nodes:
@@ -40,7 +49,6 @@ def split_nodes_image(old_nodes: list[TextNode]) -> list[TextNode]:
         TextType.IMAGE
     )
 
-
 def split_nodes_link(old_nodes: list[TextNode]) -> list[TextNode]:
     return _split_nodes_by_pattern(
         old_nodes, 
@@ -49,7 +57,12 @@ def split_nodes_link(old_nodes: list[TextNode]) -> list[TextNode]:
         TextType.LINK
     )
 
-def _split_nodes_by_pattern(old_nodes, extract_matches, build_delimiter, text_type):
+def _split_nodes_by_pattern(
+    old_nodes: list[TextNode], 
+    extract_matches: Callable[[str], list[tuple[str, str]]],
+    build_delimiter: Callable[[str, str], str], 
+    text_type: TextType
+) -> list[TextNode]:
     new_nodes: list[TextNode] = []
     for old_node in old_nodes:
         if old_node.text_type != TextType.TEXT:
@@ -72,3 +85,11 @@ def _split_nodes_by_pattern(old_nodes, extract_matches, build_delimiter, text_ty
             new_nodes.append(TextNode(remaining_text, TextType.TEXT))
 
     return new_nodes
+
+def extract_markdown_images(text: str) -> list[tuple[str, str]]:
+    pattern = r"!\[(.*?)\]\((.*?)\)"
+    return re.findall(pattern, text)
+
+def extract_markdown_links(text: str) -> list[tuple[str, str]]:
+    pattern = r"(?<!!)\[(.*?)\]\((.*?)\)"
+    return re.findall(pattern, text)
