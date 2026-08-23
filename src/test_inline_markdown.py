@@ -468,4 +468,6 @@ class TestTextToTextnode(unittest.TestCase):
         text = "This has an **unclosed bold section."
         with self.assertRaises(ValueError):
             text_to_textnodes(text)
-    
+
+if __name__ == "__main__":
+    unittest.main()
