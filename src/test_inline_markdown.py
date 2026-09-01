@@ -9,7 +9,7 @@ from inline_markdown import (
     text_to_textnodes
 )
 
-class test_extract_markdown_images(unittest.TestCase):
+class TestExtractMarkdownImages(unittest.TestCase):
     """Tests for inline_markdown.extract_markdown_images()"""
     def test_extract_markdown_images_with_image_text(self):
         text = "This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) and ![obi wan](https://i.imgur.com/fJRm4Vk.jpeg)"
@@ -43,7 +43,7 @@ class test_extract_markdown_images(unittest.TestCase):
             ]
         )
 
-class test_extract_markdown_links(unittest.TestCase):
+class TestExtractMarkdownLinks(unittest.TestCase):
     """Tests for inline_markdown.extract_markdown_links()"""
     def test_extract_markdown_links_with_link_text(self):
         text = "This is text with a [rick roll](https://i.imgur.com/aKaOqIh.gif) and [obi wan](https://i.imgur.com/fJRm4Vk.jpeg)"
@@ -405,6 +405,7 @@ class TestTextToTextnode(unittest.TestCase):
                 TextNode("link", TextType.LINK, "https://boot.dev"),
             ],
         )
+        
     def test_text_to_textnode_plain_text(self):
         text = "Just a plain sentence with no markdown."
         new_nodes = text_to_textnodes(text)
