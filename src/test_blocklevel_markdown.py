@@ -7,6 +7,7 @@ from blocklevel_markdown import (
     block_to_block_type, 
     text_to_children,
     markdown_to_html_node,
+    extract_title,
 )
 
 class TestBlockLevelMarkdownToBlocks(unittest.TestCase):
@@ -260,6 +261,72 @@ the **same** even with inline stuff
         node = markdown_to_html_node(md)
         html = node.to_html()
         self.assertEqual(html, "<div><h1>Title</h1><p>A paragraph here.</p><ul><li>item one</li><li>item two</li></ul></div>")
+
+class ExtractTitle(unittest.TestCase):
+    """Tests for blocklevel_markdown.extract_title()"""
+    def test_extract_title_h1(self):
+        md = """# Heading
+"""
+        title = extract_title(md)
+        self.assertEqual(
+            title,
+            "Heading",
+        )
+
+    def test_extract_title_multiple_h1(self):
+        md = """# Heading 1
+
+# Heading 2
+
+# Heading 3
+"""
+        title = extract_title(md)
+        self.assertEqual(
+            title,
+            "Heading 1",
+        )
+
+    def test_extract_no_header(self):
+        md = """
+
+Paragraph line 1
+Paragraph line 2
+
+* Item 1
+* Item 2
+* Item 3"""
+        with self.assertRaises(ValueError):
+                extract_title(md) 
+
+    def test_extract_title_h1_with_whitespac(self):
+        md = """#    Heading     
+"""
+        title = extract_title(md)
+        self.assertEqual(
+            title,
+            "Heading",
+        )
+
+    def test_extract_title_h3(self):
+        md = """### Heading
+"""
+        with self.assertRaises(ValueError):
+                extract_title(md)
+
+    def test_extract_title_mixed(self):
+        md = """# Heading
+
+Paragraph line 1
+Paragraph line 2
+
+* Item 1
+* Item 2
+* Item 3"""
+        title = extract_title(md)
+        self.assertEqual(
+            title,
+            "Heading",
+        ) 
 
 if __name__ == "__main__":
     unittest.main()
