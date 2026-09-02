@@ -8,7 +8,6 @@ def copystatic():
     mkdir('public')
     copy_files_recursive('static', 'public')
     
-
 def copy_files_recursive(src_dir_path: str, dst_dir_path: str):
     entry_names = listdir(src_dir_path)
     for entry_name  in entry_names:
@@ -21,5 +20,3 @@ def copy_files_recursive(src_dir_path: str, dst_dir_path: str):
             print(f"Creating new directory: '{dst_path}'")
             mkdir(dst_path)
             copy_files_recursive(src_path, dst_path)
-
-
