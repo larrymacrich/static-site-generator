@@ -3,10 +3,11 @@ from os.path import exists, join, isfile
 from shutil import copy, rmtree
 
 def copystatic():
-    if exists('public'):
-        rmtree('public')
-    mkdir('public')
-    copy_files_recursive('static', 'public')
+    target =  'docs'
+    if exists(target):
+        rmtree(target)
+    mkdir(target)
+    copy_files_recursive('static', target)
     
 def copy_files_recursive(src_dir_path: str, dst_dir_path: str):
     entry_names = listdir(src_dir_path)
