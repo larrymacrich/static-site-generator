@@ -1,13 +1,15 @@
-from textnode import TextNode, TextType
+from sys import argv
+from copystatic import copystatic
+from gencontent import generate_pages
 
-
-def main():
-    text = "This is some anchor text"
-    text_type =  TextType.LINK
-    url = "https://www.boot.dev"
-    t_node = TextNode(text, text_type, url)
-    print(t_node)
+def main(argv):
+    if len(argv) > 1:
+        basepath = argv[1]
+    else:
+        basepath = '/'
+    copystatic()
+    generate_pages(basepath)
 
 
 if __name__ == "__main__":
-    main()
+    main(argv)

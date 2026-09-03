@@ -139,3 +139,10 @@ def text_to_children(text: str) -> list[HTMLNode]:
     for text_node in text_nodes:
         html_nodes.append(text_node_to_html_node(text_node))
     return html_nodes
+
+def extract_title(markdown: str) -> str:
+    blocks = markdown_to_blocks(markdown)
+    for block in blocks:
+        if block.startswith('# '):
+            return block[1:].strip()
+    raise ValueError('No h1 header present')
